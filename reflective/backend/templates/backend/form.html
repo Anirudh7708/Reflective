@@ -1,0 +1,230 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
+    <title>Create Survey - Reflective</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <div class="container">
+        <div class="small-container" id="s-container">
+            <div class="navigation">
+                <div class="navbar">
+                    <div class="nav-left">
+                        <button class="btn" onclick="logo()">
+                            <img src="{% static 'images/REFLECTIVE.png' %}" alt="Reflective Logo" class="logo">
+                        </button>
+                    </div>
+                    <div class="nav-right">
+                        <div class="elements">
+                            <a href="{% url 'home' %}" id="home" class="element">HOME</a>
+                            <a href="{% url 'about' %}" class="element">ABOUT</a>
+                            <a href="#testimonials" class="element">TESTIMONIALS</a>
+                            <a href="{% url 'create_survey' %}" class="element">CREATE SURVEY</a>
+                            {% if user.is_authenticated %}
+                                <a href="{% url 'profile' %}" class="element">PROFILE</a>
+                                <a href="{% url 'logout' %}" class="element">LOGOUT</a>
+                            {% else %}
+                                <a href="{% url 'login' %}" class="element">LOGIN/REGISTER</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h2>Create Your Form</h2>
+
+            <form method="post" id="survey-form">
+                {% csrf_token %}
+                
+                <label for="creator-name">Form Creator's Name:</label>
+                <input type="text" id="creator-name" name="creator_name" placeholder="Enter your name here" value="{{ user.get_full_name }}">
+                
+                <label for="form-description">Form Description:</label>
+                <textarea id="form-description" name="description" placeholder="Describe your form here" oninput="adjustTextarea(this)"></textarea>
+                
+                <label for="question">Enter your question:</label>
+                <input type="text" id="question" placeholder="Enter question here" oninput="adjustInput(this)"><br>
+                
+                <label for="type">Select answer type:</label>
+                <select id="type">
+                    <option value="text">Text</option>
+                    <option value="radio">Multiple Choice</option>
+                    <option value="checkbox">Checkbox</option>
+                </select>
+
+                <button type="button" onclick="addQuestion()">Add Question</button>
+                <button type="button" onclick="generateLink()">Generate Shareable Link</button>
+
+                <div id="form-container"></div>
+                
+                <h3>Preview Form:</h3>
+                <div id="preview-form"></div>
+                <p id="shareable-link"></p>
+                
+                <button type="button" id="save-button" onclick="saveForm()">Save Form</button>
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <div id="saved-message" class="hidden">Form Saved Successfully!</div>
+                <div id="error-message" class="hidden">This question cannot be removed in the middle!</div>
+            </form>
+        </div>
+    </div>
+
+    <script src="{% static 'js/script.js' %}"></script>
+    <script>
+        const questions = [
+            { text: 'Name', type: 'text', options: [] },
+            { text: 'Review', type: 'text', options: [] },
+            { text: 'Rating', type: 'radio', options: ['1', '2', '3', '4', '5'] }
+        ];
+        const removedQuestions = []; 
+
+        document.addEventListener('DOMContentLoaded', updatePreviewForm);
+
+        function adjustInput(input) {
+            input.style.width = Math.max(200, input.value.length * 8) + "px";
+        }
+
+        function adjustTextarea(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = (textarea.scrollHeight) + "px";
+        }
+
+        function addQuestion() {
+            const questionText = document.getElementById('question').value;
+            const questionType = document.getElementById('type').value;
+
+            if (!questionText) {
+                showErrorMessage('Please enter a question.');
+                return;
+            }
+
+            const question = { text: questionText, type: questionType, options: [] };
+            questions.push(question);
+            displayQuestion(question);
+            updatePreviewForm();
+        }
+
+        function displayQuestion(question) {
+            const formContainer = document.getElementById('form-container');
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'question-item';
+
+            const label = document.createElement('label');
+            label.innerText = question.text;
+            questionDiv.appendChild(label);
+
+            const deleteButton = document.createElement('button');
+            deleteButton.innerText = 'Delete'; = function() {
+                if (questions.indexOf(question) < 3) {
+                    showErrorMessage('This question cannot be removed in the middle!');
+                    return;
+                }
+                deleteQuestion(questions.indexOf(question), questionDiv);
+            };
+            questionDiv.appendChild(deleteButton);
+
+            const addBackButton = document.createElement('button');
+            addBackButton.innerText = 'Add Back';
+            addBackButton.style.display = 'none';
+            addBackButton.onclick = function() {
+                addBackQuestion(question, questionDiv);
+            };
+            questionDiv.appendChild(addBackButton);
+
+            formContainer.appendChild(questionDiv);
+        }
+
+        function updatePreviewForm() {
+            const previewForm = document.getElementById('preview-form');
+            previewForm.innerHTML = '';
+
+            questions.forEach((question, index) => {
+                const questionDiv = document.createElement('div');
+                const label = document.createElement('label');
+                label.innerText = `${index + 1}. ${question.text}`;
+                questionDiv.appendChild(label);
+
+                if (question.type === 'text') {
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.oninput = () => adjustInput(input);
+                    questionDiv.appendChild(input);
+                } else if (question.type === 'radio' || question.type === 'checkbox') {
+                    question.options.forEach(option => {
+                        const optionDiv = document.createElement('div');
+                        const input = document.createElement('input');
+                        input.type = question.type;
+                        input.name = question.text;
+                        input.value = option;
+
+                        const optionLabel = document.createElement('label');
+                        optionLabel.innerText = option;
+
+                        optionDiv.appendChild(input);
+                        optionDiv.appendChild(optionLabel);
+                        questionDiv.appendChild(optionDiv);
+                    });
+                }
+
+                previewForm.appendChild(questionDiv);
+            });
+        }
+
+        function saveForm() {
+            const formData = {
+                creator_name: document.getElementById('creator-name').value,
+                description: document.getElementById('form-description').value,
+                questions: questions
+            };
+
+            fetch("{% url 'create_survey' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showSavedMessage();
+                    setTimeout(() => {
+                        window.location.href = "{% url 'survey_success' %}";
+                    }, 2000);
+                } else {
+                    showErrorMessage(data.error || 'Failed to save form');
+                }
+            })
+            .catch(error => {
+                showErrorMessage('An error occurred while saving the form');
+                console.error('Error:', error);
+            });
+        }
+
+        function showErrorMessage(message) {
+            const errorMessageDiv = document.getElementById('error-message');
+            errorMessageDiv.innerText = message;
+            errorMessageDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                errorMessageDiv.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Form Builder</title>
-    <link rel="stylesheet" href="{% static 'create_survey_style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/create_survey_style.css' %}">
 </head>
 <body>
     <h2>Create Your Form</h2>
@@ -204,3 +204,30 @@
     </script>
 </body>
 </html>
+
+{% comment %} {% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Survey</title>
+    <link rel="stylesheet" href="{% static 'create_survey_style.css' %}">
+</head>
+<body>
+    <h2>Create Your Survey</h2>
+    
+    <form method="post">
+        {% csrf_token %}
+        {{ survey_form.as_p }}  <!-- Survey form fields -->
+
+        <h3>Questions:</h3>
+        {{ question_formset.management_form }}
+        {% for form in question_formset %}
+            {{ form.as_p }}
+        {% endfor %}
+
+        <button type="submit">Save Survey</button>
+    </form>
+</body>
+</html> {% endcomment %}

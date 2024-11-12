@@ -1,0 +1,116 @@
+#save-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    background-color: #4CAF50; 
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+#save-button:hover {
+    background-color: #45a049; 
+}
+.error-message {
+    color: red;
+    font-size: 12px;
+}
+#form-description {
+    width: 100%;
+    padding: 8px;
+    margin-top: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    resize: none; 
+    min-height: 50px; 
+    height: auto; 
+    overflow-y: auto; 
+}
+input[type="text"],
+textarea,
+select,
+input[type="radio"],
+input[type="checkbox"] {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 1em;
+}
+
+textarea {
+    resize: none;
+    min-height: 50px;
+}
+
+.constant-question {
+    background-color: #f0f8ff; 
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.constant-question label {
+    color: #2f4f4f; 
+    font-size: 1.2em;
+}
+
+.constant-question input,
+.constant-question textarea,
+.constant-question select {
+    border: 1px solid #ccc;
+    padding: 10px;
+    width: 100%;
+    margin-top: 5px;
+}
+
+.question-item {
+    border: 1px solid #ccc;
+    background-color: #fafafa; 
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.question-item label {
+    color: #333;
+    font-size: 1.1em;
+}
+
+button {
+    background-color: #ff4d4d; 
+    color: white;
+    padding: 5px 10px;
+    margin-left: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #ff1a1a; 
+}
+
+#message {
+    margin-top: 10px;
+    color: #d9534f; 
+    font-size: 1em;
+}
+#error-message {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: red;
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    font-size: 18px;
+    z-index: 1000;
+}
